@@ -1,0 +1,72 @@
+using UnityEngine;
+using TMPro; 
+using UnityEngine.UI;
+
+public class UIManager : MonoBehaviour
+{
+    public TextMeshProUGUI scoreText;
+    public TextMeshProUGUI totalTimeText;
+    public Image patternGaugeImage;
+    public GameObject[] heartImages; 
+
+    public PatternManager patternManager; 
+    private PlayerHealth playerHealth;
+
+    private float totalTime = 0f;
+    
+    void Start()
+    {
+        GameObject player = GameObject.FindGameObjectWithTag("Player");
+        if (player != null)
+        {
+            playerHealth = player.GetComponent<PlayerHealth>();
+        }
+
+        UpdateHealthDisplay();
+    }
+
+    void Update()
+    {
+        totalTime += Time.deltaTime;
+
+        float continuousScore = totalTime * 3f; 
+        int scoreToDisplay = Mathf.FloorToInt(continuousScore);
+        
+        scoreText.text = $"SCORE: {scoreToDisplay:000} point"; 
+        totalTimeText.text = $"TIME: {totalTime:00.0}s";
+
+        UpdatePatternGauge();
+    }
+
+    public void UpdateHealthDisplay()
+    {
+        if (playerHealth == null || heartImages.Length == 0) return;
+        
+        int currentHP = playerHealth.currentHealth;
+        int maxHP = playerHealth.maxHealth;
+        int heartCount = Mathf.Min(maxHP, heartImages.Length); 
+        
+        for (int i = 0; i < heartCount; i++)
+        {
+            if (i < currentHP)
+            {
+                heartImages[i].SetActive(true);
+            }
+            else
+            {
+                heartImages[i].SetActive(false);
+            }
+        }
+    }
+
+    private void UpdatePatternGauge()
+    {
+        if (patternManager == null || patternGaugeImage == null) return;
+        
+        float interval = patternManager.patternInterval; 
+        float timeElapsedSincePatternStart = patternManager.GetCurrentPatternTimer(); 
+        float fillAmount = 1.0f - (timeElapsedSincePatternStart / interval);
+        
+        patternGaugeImage.fillAmount = fillAmount;
+    }
+}
